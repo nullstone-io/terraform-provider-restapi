@@ -168,6 +168,26 @@ func Provider() *schema.Provider {
 					},
 				},
 			},
+			"aws_v4_signing": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Configuration for AWS v4 Signing",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"region": {
+							Type:        schema.TypeString,
+							Description: "AWS Region",
+							Required:    false,
+						},
+						"service": {
+							Type:        schema.TypeString,
+							Description: "AWS Service",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"cert_string": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -271,6 +291,13 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 			}
 			opt.oauthEndpointParams = setVals
 		}
+	}
+	if v, ok := d.GetOk("aws_v4_signing"); ok {
+		awsV4SigningConfig := v.([]interface{})[0].(map[string]interface{})
+
+		opt.awsV4SigningEnabled = true
+		opt.awsV4SigningRegion = awsV4SigningConfig["aws_region"].(string)
+		opt.awsV4SigningService = awsV4SigningConfig["aws_service"].(string)
 	}
 	if v, ok := d.GetOk("cert_file"); ok {
 		opt.certFile = v.(string)

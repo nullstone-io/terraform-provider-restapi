@@ -12,9 +12,13 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/BSick7/aws-signing/signing"
+	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"golang.org/x/oauth2/clientcredentials"
 	"golang.org/x/time/rate"
 )
@@ -47,6 +51,9 @@ type apiClientOpt struct {
 	certString          string
 	keyString           string
 	debug               bool
+	awsV4SigningEnabled bool
+	awsV4SigningRegion  string
+	awsV4SigningService string
 }
 
 /*APIClient is a HTTP client with additional controlling fields*/
@@ -126,9 +133,28 @@ func NewAPIClient(opt *apiClientOpt) (*APIClient, error) {
 		tlsConfig.Certificates = []tls.Certificate{cert}
 	}
 
-	tr := &http.Transport{
+	var tr http.RoundTripper
+	tr = &http.Transport{
 		TLSClientConfig: tlsConfig,
 		Proxy:           http.ProxyFromEnvironment,
+	}
+	if opt.awsV4SigningEnabled {
+		cfg, err := config.LoadDefaultConfig(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf("error loading aws v4 signing config: %w", err)
+		}
+		cfg.Region = opt.awsV4SigningRegion
+		if region := os.Getenv("AWS_REGION"); region != "" {
+			cfg.Region = region
+		}
+		creds, err := cfg.Credentials.Retrieve(context.TODO())
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving aws credentials: %w", err)
+		}
+		signer := v4.NewSigner()
+		signingTransport := signing.NewTransport(signer, opt.awsV4SigningService, cfg.Region, creds)
+		signingTransport.BaseTransport = tr
+		tr = signingTransport
 	}
 
 	var cookieJar http.CookieJar
