@@ -178,7 +178,7 @@ func Provider() *schema.Provider {
 						"region": {
 							Type:        schema.TypeString,
 							Description: "AWS Region",
-							Required:    false,
+							Optional:    true,
 						},
 						"service": {
 							Type:        schema.TypeString,
