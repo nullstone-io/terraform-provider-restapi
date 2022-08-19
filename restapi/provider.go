@@ -296,8 +296,10 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 		awsV4SigningConfig := v.([]interface{})[0].(map[string]interface{})
 
 		opt.awsV4SigningEnabled = true
-		opt.awsV4SigningRegion = awsV4SigningConfig["aws_region"].(string)
-		opt.awsV4SigningService = awsV4SigningConfig["aws_service"].(string)
+		if val, ok := awsV4SigningConfig["region"]; ok {
+			opt.awsV4SigningRegion = val.(string)
+		}
+		opt.awsV4SigningService = awsV4SigningConfig["service"].(string)
 	}
 	if v, ok := d.GetOk("cert_file"); ok {
 		opt.certFile = v.(string)
