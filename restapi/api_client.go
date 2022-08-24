@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"io/ioutil"
 	"log"
 	"math"
@@ -24,36 +25,39 @@ import (
 )
 
 type apiClientOpt struct {
-	uri                 string
-	insecure            bool
-	username            string
-	password            string
-	headers             map[string]string
-	timeout             int
-	idAttribute         string
-	createMethod        string
-	readMethod          string
-	updateMethod        string
-	destroyMethod       string
-	copyKeys            []string
-	writeReturnsObject  bool
-	createReturnsObject bool
-	xssiPrefix          string
-	useCookies          bool
-	rateLimit           float64
-	oauthClientID       string
-	oauthClientSecret   string
-	oauthScopes         []string
-	oauthTokenURL       string
-	oauthEndpointParams url.Values
-	certFile            string
-	keyFile             string
-	certString          string
-	keyString           string
-	debug               bool
-	awsV4SigningEnabled bool
-	awsV4SigningRegion  string
-	awsV4SigningService string
+	uri                         string
+	insecure                    bool
+	username                    string
+	password                    string
+	headers                     map[string]string
+	timeout                     int
+	idAttribute                 string
+	createMethod                string
+	readMethod                  string
+	updateMethod                string
+	destroyMethod               string
+	copyKeys                    []string
+	writeReturnsObject          bool
+	createReturnsObject         bool
+	xssiPrefix                  string
+	useCookies                  bool
+	rateLimit                   float64
+	oauthClientID               string
+	oauthClientSecret           string
+	oauthScopes                 []string
+	oauthTokenURL               string
+	oauthEndpointParams         url.Values
+	certFile                    string
+	keyFile                     string
+	certString                  string
+	keyString                   string
+	debug                       bool
+	awsV4SigningEnabled         bool
+	awsV4SigningRegion          string
+	awsV4SigningService         string
+	awsV4SigningAccessKeyId     string
+	awsV4SigningSecretAccessKey string
+	awsV4SigningSessionToken    string
 }
 
 /*APIClient is a HTTP client with additional controlling fields*/
@@ -147,7 +151,12 @@ func NewAPIClient(opt *apiClientOpt) (*APIClient, error) {
 		if region := os.Getenv("AWS_REGION"); region != "" {
 			cfg.Region = region
 		}
-		creds, err := cfg.Credentials.Retrieve(context.TODO())
+		credsProvider := cfg.Credentials
+		if opt.awsV4SigningAccessKeyId != "" {
+			credsProvider = credentials.NewStaticCredentialsProvider(opt.awsV4SigningAccessKeyId, opt.awsV4SigningSecretAccessKey, opt.awsV4SigningSessionToken)
+		}
+
+		creds, err := credsProvider.Retrieve(context.TODO())
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving aws credentials: %w", err)
 		}

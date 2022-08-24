@@ -185,6 +185,21 @@ func Provider() *schema.Provider {
 							Description: "AWS Service",
 							Required:    true,
 						},
+						"access_key_id": {
+							Type:        schema.TypeString,
+							Description: "AWS Access Key ID",
+							Optional:    true,
+						},
+						"secret_access_key": {
+							Type:        schema.TypeString,
+							Description: "AWS Secret Access Key",
+							Optional:    true,
+						},
+						"session_token": {
+							Type:        schema.TypeString,
+							Description: "AWS Session Token",
+							Optional:    true,
+						},
 					},
 				},
 			},
@@ -300,6 +315,15 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 			opt.awsV4SigningRegion = val.(string)
 		}
 		opt.awsV4SigningService = awsV4SigningConfig["service"].(string)
+		if val, ok := awsV4SigningConfig["access_key_id"]; ok {
+			opt.awsV4SigningAccessKeyId = val.(string)
+		}
+		if val, ok := awsV4SigningConfig["secret_access_key"]; ok {
+			opt.awsV4SigningSecretAccessKey = val.(string)
+		}
+		if val, ok := awsV4SigningConfig["session_token"]; ok {
+			opt.awsV4SigningSessionToken = val.(string)
+		}
 	}
 	if v, ok := d.GetOk("cert_file"); ok {
 		opt.certFile = v.(string)
