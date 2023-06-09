@@ -32,6 +32,7 @@ description: |-
 - **key_file** (String, Optional) When set with the cert_file parameter, the provider will load a client certificate as a file for mTLS authentication. Note that this mechanism simply delegates to golang's tls.LoadX509KeyPair which does not support passphrase protected private keys. The most robust security protections available to the key_file are simple file system permissions.
 - **key_string** (String, Optional) When set with the cert_string parameter, the provider will load a client certificate as a string for mTLS authentication. Note that this mechanism simply delegates to golang's tls.LoadX509KeyPair which does not support passphrase protected private keys. The most robust security protections available to the key_file are simple file system permissions.
 - **oauth_client_credentials** (Block List, Max: 1) Configuration for oauth client credential flow (see [below for nested schema](#nestedblock--oauth_client_credentials))
+- **aws_v4_signing** (Block List, Max: 1) Configuration for AWS V4 Signing) (see [below for nested schema](#nested-schema-for-aws_v4_signing))
 - **password** (String, Optional) When set, will use this password for BASIC auth to the API.
 - **rate_limit** (Number, Optional) Set this to limit the number of requests per second made to the API.
 - **read_method** (String, Optional) Defaults to `GET`. The HTTP method used to READ objects of this type on the API server.
@@ -56,3 +57,12 @@ Optional:
 
 - **endpoint_params** (Map of List of String, Optional) Additional key/values to pass to the underlying Oauth client library (as EndpointParams)
 - **oauth_scopes** (List of String, Optional) scopes
+
+<a id="nestedblock--aws_v4_signing"></a>
+### Nested Schema for `aws_v4_signing`
+
+- **service** (String, Required) The name of the AWS service to perform authentication. (e.g. `lambda` for invoking lambda)
+- **region** (String, Optional) The AWS region to authenticate against. Uses `AWS_REGION` environment variable.
+- **access_key_id** (String, Optional) Uses `AWS_ACCESS_KEY_ID` environment variable.
+- **secret_access_key** (String, Optional) Uses `AWS_SECRET_ACCESS_KEY` environment variable.
+- **session_token** (String, Optional) Uses `AWS_SESSION_TOKEN` environment variable.
